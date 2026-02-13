@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Modalbox</title>
+    <style>
+        .annytab-messagebox-container {
+            display: block;
+            position: relative;
+            /*max-width: 600px;*/
+            background-color: #ffffff;
+            padding: 0;
+            margin: 0;
+        }
+        .annytab-messagebox-header {
+            font-size: 24px;
+            line-height: 36px;
+            font-weight: bold;
+            color: #000000;
+            margin-bottom: 5px;
+        }
+        .annytab-messagebox-text {
+            font-size: 16px;
+            line-height: 24px;
+        }
+        .annytab-messagebox-button-panel {
+            bottom: 0;
+            text-align: right;
+            margin-top: 20px;
+        }
+        .annytab-messagebox-button {
+            min-width: 80px;
+            padding: 0 20px 0 20px;
+            margin: 0 0 0 10px;
+            color: #ffffff;
+            font-size: 16px;
+            line-height: 28px;
+            background-color: #ffffff;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-green {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+            background-color: #4CAF50;
+            border-color: #3B873D;
+        }
+        .btn-green:hover {
+            background-color: #59CC5D;
+            border-color: #4CAF50;
+            text-decoration: none;
+        }
+        .btn-red {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+            background-color: #d9534f;
+            border-color: #d43f3a;
+        }
+        .btn-red:hover {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+            background-color: #F25C5C;
+            border-color: #d9534f;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;">
+
+    @*Html*@
+    <a href="#modalbox-test" class="annytab-modalbox-popup">Open Modalbox</a>
+
+    <div id="modalbox-test" style="display:none;">
+        <div class="annytab-messagebox-container">
+            <div class="annytab-messagebox-header">Delete files</div>
+            <div class="annytab-messagebox-text">
+                Are you sure that you want to delete files? They will be deleted permanently.
+            </div>
+            <div class="annytab-messagebox-button-panel">
+                <input type="button" class="annytab-messagebox-button btn-green btn-disablable" value="Ok" onclick="disableButtons(); sayHello(['Bill', 'USA', 100]); enableButtons();" />
+                <input type="button" class="annytab-messagebox-button btn-red btn-disablable" value="Cancel" onclick="disableButtons(); modalbox.close(); enableButtons(); " />
+            </div>
+        </div>
+    </div>
+
+    @*Scripts*@
+
+    <link href="/css/annytab.modalbox.css" rel="stylesheet" />
+    <script src="/js/annytab.effects.js"></script>
+    <script src="/js/annytab.modalbox.js"></script>
+    <script>
+
+        // Modalbox
+        var modalbox = new annytab.modalbox({ selector: '.annytab-modalbox-popup', position: 'center-center', fade_duration: 1000, close_click_outside: true });
+
+        // Open modalbox with html
+        modalbox.open({
+            html: '<div class="annytab-messagebox-container">'
+                + '<div class="annytab-messagebox-header">' + 'Do you need help?' + '</div>'
+                + '<div class="annytab-messagebox-text">' + 'I can help you with any problem, just answer yes or no.' + '</div>'
+                + '<div class="annytab-messagebox-button-panel">'
+                + '<input type="button" class="annytab-messagebox-button btn-green btn-disablable" onclick="disableButtons(); sayHello([\'Donald\', \'Germany\', 33]); enableButtons();" value="Yes" />'
+                + '<input type="button" class="annytab-messagebox-button btn-red btn-disablable" onclick="disableButtons(); modalbox.close(); enableButtons();" value="No" />'
+                + '</div></div>', position: 'top-left'
+        });
+
+        // Open modalbox with html
+        modalbox.open({
+            html: '<div class="annytab-modalbox-content">'
+                + '<div class="annytab-modalbox-content-title">' + 'Do you need help?' + '</div>'
+                + '<div class="annytab-modalbox-content-message">' + 'I can help you with any problem, just answer yes or no.' + '</div>'
+                + '<div class="annytab-modalbox-content-buttonpanel">'
+                + '<input type="button" class="annytab-modalbox-content-button-ok" value="Yes" />'
+                + '<input type="button" class="annytab-modalbox-content-button-cancel" value="No" />'
+                + '</div></div>', position: 'top-center', callback: sayHello, parameters: ['Marcus', 'France', 120]
+        });
+
+        // Open modalbox with html
+        modalbox.open({
+            html: '<div style="display: block;max-width: 1024px;background-color: #ffffff;height: 100vh;">'
+                + 'TEST fsdafadsf af asdfsdafsadf sadfsa dfsadfsadfsadfsadfsad fsadf sadfsadf sdfasdf dsafd saf dasdfsadff fd as fasdffdasd ff dasd ffdasfd f dasdf f d'
+                + '</div>', position: 'bottom-right' });
+
+        // Open standard modalbox
+        modalbox.open({ position: 'center-center', title: 'Title', message: 'Message', ok_text: 'Ok', cancel_text: 'Cancel', callback: sayHello, parameters: ['Peter', 'Russia', 50] });
+
+        // Say hello to a person
+        function sayHello(parameters)
+        {
+            // Log the message
+            console.log('Hello ' + parameters[0] + ' from ' + parameters[1] + ', you got ' + parameters[2] + ' points!');
+
+            // Close the modalbox
+            modalbox.close();
+
+        } // End of the sayHello method
+
+        // Disable buttons
+        function disableButtons()
+        {
+            var buttons = document.getElementsByClassName('btn-disablable');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].setAttribute('disabled', true);
+            }
+
+        } // End of the disableButtons method
+
+        // Enable buttons
+        function enableButtons() {
+            var buttons = document.getElementsByClassName('btn-disablable');
+            for (var i = 0; i < buttons.length; i++) {
+                setTimeout(function (button) { button.removeAttribute('disabled'); }, 1000, buttons[i]);
+            }
+
+        } // End of the enableButtons method
+
+    </script>
+
+</body>
+</html>

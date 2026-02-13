@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>eId Smart Card</title>
+    <style>
+        .annytab-textarea{width:300px;height:100px;}
+        .annytab-textbox {width:300px;}
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;">
+
+    <!-- Container -->
+    <div style="display:block;padding:10px;">
+
+        <h1>eId Smart Card</h1>
+        <div>
+            You can sign a file with an eID smart card and a smart card reader. To be able to sign files with an eID-card you need a browser extension for smart cards
+            and software that comes with your smart card reader. Download <b>Token Signing</b> extension from <a href="https://chrome.google.com/webstore/detail/ckjefchnfjhjfedoccjbhjpbncimppeg">chrome web store</a> or from
+            <a href="https://microsoftedge.microsoft.com/addons/detail/fofaekogmodbjplbmlbmjiglndceaajh">windows store</a> or from <a href="https://addons.mozilla.org/sv-SE/firefox/addon/token-signing2/">firefox add-ons.</a>.<br /><br />
+        </div><br />
+
+        <!-- Input form -->
+        <form id="inputForm">
+
+            <div>Select file to sign <span id="loading"></span></div>
+            <input id="fuFile" name="fuFile" type="file" onchange="calculateMd5();" class="annytab-textbox" /><br /><br />
+
+            <div>Select algorithm</div>
+            <select id="selectSignatureAlgorithm" name="selectSignatureAlgorithm" class="annytab-textbox">
+                <option value="SHA-1" selected>SHA-1</option>
+                <option value="SHA-256">SHA-256</option>
+                <option value="SHA-384">SHA-384</option>
+                <option value="SHA-512">SHA-512</option>
+            </select><br /><br />
+
+            <div>Select padding</div>
+            <select name="selectSignaturePadding" class="annytab-textbox">
+                <option value="Pkcs1" selected>Pkcs1</option>
+            </select><br /><br />
+
+            <div>Signature data</div>
+            <textarea id="txtSignatureData" name="txtSignatureData" class="annytab-textarea"></textarea><br /><br />
+
+            <div>Certificate</div>
+            <textarea id="txtSignatureCertificate" name="txtSignatureCertificate" class="annytab-textarea"></textarea><br /><br />
+
+            <div>Signature value</div>
+            <textarea id="txtSignatureValue" name="txtSignatureValue" class="annytab-textarea"></textarea><br /><br />
+
+            <input type="button" value="Sign file" class="btn-disablable" onclick="createSignature()" disabled />
+            <input type="button" value="Validate signature" class="btn-disablable" onclick="validateSignature()" disabled />
+
+        </form>
+
+    </div>
+
+    <!-- Style and scripts -->
+    <link href="/css/annytab.notifier.css" rel="stylesheet" />
+    <script src="/js/font-awesome/all.min.js"></script>
+    <script src="/js/annytab.effects.js"></script>
+    <script src="/js/annytab.notifier.js"></script>
+    <script src="/js/crypto/spark-md5.js"></script>
+    <script src="/js/crypto/hwcrypto.js"></script>
+    <script src="/js/crypto/hex2base.js"></script>
+    <script>
+
+            // Set default focus
+            document.querySelector('#fuFile').focus();
+
+            // Create a signature
+            async function createSignature() {
+                // Make sure that the request is secure (SSL)
+                if (location.protocol !== 'https:') {
+                    annytab.notifier.show('error', 'You need a secure connection (SSL)!');
+                    return;
+                }
+
+                // Disable buttons
+                disableButtons();
+
+                // Get input data
+                var data = document.querySelector('#txtSignatureData').value;
+                var algorithm = document.querySelector('#selectSignatureAlgorithm').value;
+                var hash = await getHash(data, algorithm);
+
+                // Log selected algorithm and hash
+                console.log('Algorithm: ' + algorithm);
+                console.log('Hash: ' + hash);
+
+                // Get the certificate
+                window.hwcrypto.getCertificate({ lang: 'en' }).then(function (response) {
+
+                    // Get certificate
+                    certificate = hexToBase64(response.hex);
+                    document.querySelector('#txtSignatureCertificate').value = certificate;
+                    console.log('Using certificate:\n' + certificate);
+
+                    // Sign the hash
+                    window.hwcrypto.sign(response, { type: algorithm, hex: hash }, { lang: 'en' }).then(function (response) {
+
+                        // Get the signature value
+                        signature_value = hexToBase64(response.hex);
+                        document.querySelector('#txtSignatureValue').value = signature_value;
+                        annytab.notifier.show('success', 'Signature was successfully created!');
+
+                        // Enable buttons
+                        enableButtons();
+
+                        // Post the form
+
+                    }, function (err) {
+
+                        // Enable buttons
+                        enableButtons();
+
+                        if (err.message === 'no_implementation') {
+                            annytab.notifier.show('error', 'You need to install an extension for smart cards in your browser!');
+                        }
+                        else if (err.message === 'pin_blocked') {
+                            annytab.notifier.show('error', 'Your ID-card is blocked!');
+                        }
+                        else if (err.message === 'no_certificates') {
+                            annytab.notifier.show('error', 'We could not find any certificates, check your smart card reader.');
+                        }
+                        else if (err.message === 'technical_error') {
+                            annytab.notifier.show('error', 'The file could not be signed, your ID-card might not support {0}.'.replace('{0}', algorithm));
+                        }
+                    });
+
+                }, function (err) {
+
+                    // Enable buttons
+                    enableButtons();
+
+                    if (err.message === 'no_implementation') {
+                        annytab.notifier.show('error', 'You need to install an extension for smart cards in your browser!');
+                    }
+                    else if (err.message === 'pin_blocked') {
+                        annytab.notifier.show('error', 'Your ID-card is blocked!');
+                    }
+                    else if (err.message === 'no_certificates') {
+                        annytab.notifier.show('error', 'We could not find any certificates, check your smart card reader.');
+                    }
+                    else if (err.message === 'technical_error') {
+                        annytab.notifier.show('error', 'The file could not be signed, your ID-card might not support {0}.'.replace('{0}', algorithm));
+                    }
+                });
+
+            } // End of the createSignature method
+
+            // Validate signature
+            function validateSignature() {
+
+                // Disable buttons
+                disableButtons();
+
+                // Create form data
+                var fd = new FormData(document.querySelector('#inputForm'));
+
+                // Post form data
+                postFormData('/eidsmartcard/validate', fd, function (data) {
+                    if (data.success === true) {
+                        annytab.notifier.show('success', data.message);
+                    }
+                    else {
+                        annytab.notifier.show('error', data.message);
+                    }
+
+                    // Enable buttons
+                    enableButtons();
+
+                }, function (data) {
+                    annytab.notifier.show('error', data.message);
+
+                    // Enable buttons
+                    enableButtons();
+                });
+
+            } // End of the validateSignature method
+
+            // Get a hash of a message
+            async function getHash(data, algorithm) {
+                // Hash data
+                var hashBuffer = await crypto.subtle.digest(algorithm, new TextEncoder().encode(data));
+
+                // Convert buffer to byte array
+                var hashArray = Array.from(new Uint8Array(hashBuffer));
+
+                // Convert bytes to hex string
+                var hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                // Return hash as hex string
+                return hashHex;
+
+            } // End of the getHash method
+
+            // #region MD5
+
+            // Convert Md5 to C# version
+            function convertMd5(str) {
+                return btoa(String.fromCharCode.apply(null,
+                    str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" "))
+                );
+
+            } // End of the convertMd5 method
+
+            // Calculate a MD5 value of a file
+            async function calculateMd5() {
+
+                // Get the controls
+                var data = document.querySelector("#txtSignatureData");
+                var loading = document.querySelector("#loading");
+
+                // Get the file
+                var file = document.querySelector("#fuFile").files[0];
+
+                // Make sure that a file is selected
+                if (typeof file === 'undefined' || file === null) {
+                    return;
+                }
+
+                // Add a loading animation
+                loading.innerHTML = '- 0 %';
+
+                // Variables
+                var block_size = 4 * 1024 * 1024; // 4 MiB
+                var offset = 0;
+
+                // Create a spark object
+                var spark = new SparkMD5.ArrayBuffer();
+                var reader = new FileReader();
+
+                // Create blocks
+                while (offset < file.size) {
+                    // Get the start and end indexes
+                    var start = offset;
+                    var end = Math.min(offset + block_size, file.size);
+
+                    await loadToMd5(spark, reader, file.slice(start, end));
+                    loading.innerHTML = '- ' + Math.round((offset / file.size) * 100) + ' %';
+
+                    // Modify the offset and increment the index
+                    offset = end;
+                }
+
+                // Get todays date
+                var today = new Date();
+                var dd = String(today.getDate()).padStart(2, '0');
+                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                var yyyy = today.getFullYear();
+
+                // Output signature data
+                data.value = yyyy + '-' + mm + '-' + dd + ',' + convertMd5(spark.end());
+                loading.innerHTML = '- 100 %';
+
+                // Enable buttons
+                enableButtons();
+
+            } // End of the calculateMd5 method
+
+            // Load to md5
+            async function loadToMd5(spark, reader, chunk) {
+                return new Promise((resolve, reject) => {
+                    reader.readAsArrayBuffer(chunk);
+                    reader.onload = function (e) {
+                        resolve(spark.append(e.target.result));
+                    };
+                    reader.onerror = function () {
+                        reject(reader.abort());
+                    };
+                });
+
+            } // End of the loadToMd5 method
+
+            // #endregion
+
+            // #region Form methods
+
+            // Post form data
+            function postFormData(url, fd, successCallback, errorCallback) {
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // Get response
+                        var data = JSON.parse(xhr.response);
+
+                        // Check success status
+                        if (data.success === true) {
+                            // Callback success
+                            if (successCallback !== null) { successCallback(data); }
+                        }
+                        else {
+                            // Callback error
+                            if (errorCallback !== null) { errorCallback(data); }
+                        }
+                    }
+                    else {
+                        // Callback error information
+                        data = { success: false, id: '', message: xhr.status + " - " + xhr.statusText };
+                        if (errorCallback !== null) { errorCallback(data); }
+                    }
+                };
+                xhr.onerror = function () {
+                    // Callback error information
+                    data = { success: false, id: '', message: xhr.status + " - " + xhr.statusText };
+                    if (errorCallback !== null) { errorCallback(data); }
+                };
+                xhr.send(fd);
+
+            } // End of the postFormData method
+
+            // Disable buttons
+            function disableButtons() {
+                var buttons = document.getElementsByClassName('btn-disablable');
+                for (var i = 0; i < buttons.length; i++) {
+                    buttons[i].setAttribute('disabled', true);
+                }
+
+            } // End of the disableButtons method
+
+            // Enable buttons
+            function enableButtons() {
+                var buttons = document.getElementsByClassName('btn-disablable');
+                for (var i = 0; i < buttons.length; i++) {
+                    setTimeout(function (button) { button.removeAttribute('disabled'); }, 1000, buttons[i]);
+                }
+
+            } // End of the enableButtons method
+
+            // #endregion
+
+        </script>
+
+</body>
+</html>

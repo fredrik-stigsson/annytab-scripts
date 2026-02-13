@@ -1,0 +1,14 @@
+[
+  {
+    "outputFileName": "wwwroot/css/hockeytabeller.min.css",
+    "inputFiles": [
+      "wwwroot/css/hockeytabeller.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/hockeytabeller.min.js",
+    "inputFiles": [
+      "wwwroot/js/hockeytabeller.js"
+    ]
+  }
+]

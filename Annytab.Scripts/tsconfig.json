@@ -1,0 +1,14 @@
+{
+  "compileOnSave": true,
+  "files": [
+    "wwwroot/js/annytab.html5.validation.js",
+    "wwwroot/js/annytab.effects.js",
+    "wwwroot/js/annytab.signature.js"
+  ],
+  "compilerOptions": {
+    "allowJs": true,
+    "sourceMap": false,
+    "target": "es5",
+    "outDir": "wwwroot/tjs-typescript"
+  }
+}

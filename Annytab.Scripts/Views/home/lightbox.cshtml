@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Lightbox</title>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;padding:20px;">
+
+    @*Html*@
+    <a href="/images/fall_nature.jpg" class="annytab-lightbox-popup" data-lightbox-group="gp1" data-lightbox-caption="Hello, I have made this image.">
+        <img src="/images/fall_nature.jpg" alt="Fall" style="max-width:600px;border:1px solid #cccccc;" />
+    </a>
+    <a href="/images/italian-landscape.jpg" class="annytab-lightbox-popup" data-lightbox-group="gp1">
+        <img src="/images/italian-landscape.jpg" alt="Fall" style="max-width:600px;border:1px solid #cccccc;" />
+    </a>
+
+    @*Scripts*@
+
+    <link href="/css/annytab.lightbox.css" rel="stylesheet" />
+    <script src="/js/font-awesome/all.min.js"></script>
+    <script src="/js/annytab.effects.js"></script>
+    <script src="~/js/annytab.lightbox.js"></script>
+    <script>
+
+        // Lightbox
+        var lightbox = new annytab.lightbox({ selector: '.annytab-lightbox-popup', fade_duration: 1000, close_click_outside: false, slideshow: true, slideshow_interval: 10000 });
+
+    </script>
+
+</body>
+</html>

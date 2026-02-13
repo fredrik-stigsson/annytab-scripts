@@ -1,0 +1,283 @@
+﻿/* Standard layout */
+@media screen and (min-width: 1280px) 
+{
+    .layout-outer-container {
+        margin: 0px auto 0px auto;
+        width: 1280px;
+    }
+
+    .layout-container-left {
+        float: left;
+        position: relative;
+        width: 976px;
+        background-color: #FFFFFF;
+    }
+
+    .layout-standard-header {
+        clear: both;
+        width: 976px;
+        height: 34px;
+        background-color: #ddddde;
+    }
+
+    .layout-mobile-header {
+        display: none;
+    }
+
+    .layout-searchbox {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+    }
+
+    .layout-menu {
+        float: left;
+        display: block;
+        width: 280px;
+        min-height: 532px;
+    }
+
+    .layout-menu-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-donation {
+        display: block;
+        border: 1px solid #808080;
+        padding: 5px;
+        text-align: center;
+    }
+
+    .layout-content {
+        float: left;
+        width: 696px;
+        height: auto;
+        overflow: auto;
+    }
+
+    .layout-content-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-container-right {
+        float: left;
+        width: 304px;
+    }
+
+    .layout-fixed-ad {
+        display: block;
+        margin-left: 4px;
+        position: absolute;
+    }
+
+    .layout-footer {
+        clear: both;
+        width: 976px;
+        font-size: 16px;
+        line-height: 32px;
+        background-color: #ddddde;
+    }
+
+    .layout-footer-padding {
+        padding: 5px 5px 5px 10px;
+    }
+
+    .adslot-top {
+        display: inline-block;
+        width: 336px;
+        height: 280px;
+    }
+
+    .adslot-bottom {
+        display: inline-block;
+        width: 336px;
+        height: 280px;
+    }
+}
+
+/* Medium layout */
+@media only screen and (min-width: 976px) and (max-width: 1279px) 
+{
+    .layout-outer-container {
+        margin: 0px auto 0px auto;
+        width: 976px;
+    }
+
+    .layout-container-left {
+        float: left;
+        position: relative;
+        width: 976px;
+        background-color: #FFFFFF;
+    }
+
+    .layout-standard-header {
+        clear: both;
+        width: 976px;
+        height: 34px;
+        background-color: #ddddde;
+    }
+
+    .layout-mobile-header {
+        display: none;
+    }
+
+    .layout-searchbox {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+    }
+
+    .layout-menu {
+        float: left;
+        display: block;
+        width: 280px;
+        min-height: 532px;
+    }
+
+    .layout-menu-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-donation {
+        display: block;
+        border: 1px solid #808080;
+        padding: 5px;
+        text-align: center;
+    }
+
+    .layout-content {
+        float: left;
+        width: 696px;
+        height: auto;
+        overflow: auto;
+    }
+
+    .layout-content-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-container-right {
+        display: none;
+    }
+
+    .layout-fixed-ad {
+        display: none;
+    }
+
+    .layout-footer {
+        clear: both;
+        width: 976px;
+        font-size: 16px;
+        line-height: 32px;
+        background-color: #ddddde;
+    }
+
+    .layout-footer-padding {
+        padding: 5px 5px 5px 10px;
+    }
+
+    .adslot-top {
+        display: inline-block;
+        width: 336px;
+        height: 280px;
+    }
+
+    .adslot-bottom {
+        display: inline-block;
+        width: 336px;
+        height: 280px;
+    }
+}
+
+/* Mobile layout */
+@media only screen and (max-width: 975px) 
+{
+    .layout-outer-container {
+        margin: 0px auto 0px auto;
+        max-width: 1280px;
+    }
+
+    .layout-standard-header {
+        display: none;
+    }
+
+    .layout-mobile-header {
+        clear: both;
+        position: relative;
+        max-width: 1280px;
+        height: 34px;
+        text-align: center;
+        background-color: #ddddde;
+    }
+
+    .layout-menu {
+        display: none;
+        z-index: 5;
+        position: absolute;
+        width: 280px;
+        height: auto;
+        background-color: #ffffff;
+        border-right: 1px solid #808080;
+        border-bottom: 1px solid #808080;
+    }
+
+    .layout-menu-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-donation {
+        display: block;
+        border: 1px solid #808080;
+        padding: 5px;
+        text-align: center;
+    }
+
+    .layout-searchbox {
+        display: none;
+        z-index: 5;
+        max-width: 1280px;
+        padding: 5px;
+        background-color: #ffffff;
+        text-align: right;
+        border-bottom: 1px solid #808080;
+    }
+
+    .layout-content {
+        max-width: 1280px;
+        background-color: #ffffff;
+    }
+
+    .layout-content-padding {
+        padding: 20px 15px 20px 15px;
+    }
+
+    .layout-container-right {
+        display: none;
+    }
+
+    .layout-fixed-ad {
+        display: none;
+    }
+
+    .layout-footer {
+        clear: both;
+        max-width: 1280px;
+        font-size: 16px;
+        line-height: 32px;
+        background-color: #ddddde;
+    }
+
+    .layout-footer-padding {
+        padding: 5px 5px 5px 10px;
+    }
+
+    .adslot-top {
+        display: none;
+    }
+
+    .adslot-bottom {
+        display: inline-block;
+        width: 300px;
+        height: 250px;
+    }
+}

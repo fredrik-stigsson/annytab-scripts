@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Preload CSS</title>
+    <meta charset="utf-8" />
+    <meta name="handheldFriendly" content="true" />
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,user-scalable=yes" />
+
+    <!-- Resources -->
+    <link href="/favicon.png" rel="shortcut icon" type="image/x-icon" />
+    <link href="/css/layout.css" rel="preload" as="style" onload="this.rel='stylesheet'" />
+    <link href="/css/styling.css" rel="preload" as="style" onload="this.rel='stylesheet'" />
+
+    <!-- Very important styling -->
+    <style>
+        body {
+            padding: 0px;
+            margin: 0px;
+            height: 100%;
+            text-align: left;
+            background-color: #4a5c84;
+            font-family: Verdana;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="cookie-consent">
+        <span class="cookie-consent-text">Cookies and custom ads help us deliver our services. By using our services you agree to our use of cookies and custom ads.</span>
+        <button type="button" class="basic-button">Got it!</button>
+        <a href="/privacypolicy" class="cookie-consent-text">Read more</a>
+    </div>
+
+    <div class="layout-outer-container">
+        <div class="layout-container-left">
+            <div class="layout-standard-header noprint">
+                <a href="/" style="font-size:18px;line-height:34px;padding-left:5px;">Testsite.se - testing to preload CSS</a>
+            </div>
+            <div class="layout-mobile-header noprint">
+                <a href="/" style="font-size:18px;line-height:34px;">Testsite.se</a>
+            </div>
+            <div class="layout-searchbox noprint">
+                <input type="text" class="search-textbox" />
+                <input type="button" class="search-button" value="Search" />
+            </div>
+            <div class="layout-menu noprint">
+                <div class="layout-menu-padding">
+                    <a class="menu-link" href="/item1" rel="nofollow">Item 1</a><br />
+                    <a class="menu-link" href="/item2" rel="nofollow">Item 2</a><br />
+                    <a class="menu-link" href="/item3" rel="nofollow">Item 3</a><br />
+                    <a class="menu-link" href="/item4" rel="nofollow">Item 4</a><br />
+                </div>
+            </div>
+            <div class="layout-content">
+                <div class="layout-content-padding basic-breadtext">
+                    <h1>Welcome to our website</h1>
+                    <p>A Name Not Yet Taken AB is a creative company that helps businesses and individuals by offering products that provide both content and entertainment.</p>
+                    <p>A Name Not Yet Taken AB was founded on 13 September 2011 and has taken over the business from JFS Bokforing HB, which started in early 2005.</p>
+                    <p>Our business is project-based because we usually works on new projects in our daily activities. Our product portfolio consists of websites, games and apps for Android. We also have a small consulting business for accounting and programming, but our main focus is on improving existing products and developing new products.</p>
+                </div>
+            </div>
+            <div class="layout-footer">
+                <div class="layout-footer-padding">
+                    <a href="https://www.annytab.com" target="_blank" rel="publisher">A Name Not Yet Taken AB</a>&nbsp; &copy; 2019
+                </div>
+            </div>
+        </div>
+        <div class="layout-container-right noprint">
+            <div class="layout-fixed-ad">
+                <a href="https://www.doxservr.com" rel="nofollow" class="doxservr-right-ad">
+                    <img src="https://www.bokforingstips.se/images/doxservr-v2-300x250.jpg" alt="Doxservr" style="display:block;max-width:300px;border:0px;" />
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <link media="print" href="/css/print_style.css" rel="stylesheet" />
+    <script src="/js/polyfills/csspreloader.min.js"></script>
+
+</body>
+</html>

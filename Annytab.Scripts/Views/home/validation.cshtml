@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Form Validation</title>
+    <style>
+        /* Validation */
+        .validation-error {
+            display: block;
+            font-weight: normal;
+            font-size: 16px;
+            line-height: 16px;
+            color: #f00000;
+            padding: 5px 5px 10px 0;
+            margin: 0;
+        }
+        input:invalid, textarea:invalid {
+            border: 1px solid #f00000;
+        }
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;">
+
+    @*Input form*@
+    <form id="inputForm" action="/home/test" method="post" enctype="multipart/form-data">
+
+        <div>Id</div>
+        <input name="txtId" type="text" tabindex="-1" readonly value="32" /><br /><br />
+
+        <div>Password</div>
+        <input name="txtPassword" type="password" value="" placeholder="Password" /><br />
+        <input name="txtConfirmPassword" type="password" value="" placeholder="Confirm password"
+               data-validation-equalto="txtPassword" data-error-equalto="Passwords does not match!" />
+        <div class="validation-error" data-error-for="txtConfirmPassword"></div>
+
+        <div>Username</div>
+        <input name="txtUsername" type="text" value="" placeholder="Username" required data-validation-remote="/home/verify_username,txtId"
+               data-error-remote="The username is already in use!" /><br /><br />
+        <!--<div class="validation-error" data-error-for="txtUsername"></div>-->
+
+        <div>File</div>
+        <input type="file" accept=".jpg, .PNG" data-validation-file="262144" data-error-file="Max 256 KiB per file, must be .jpg or .png!" /><br /><br />
+
+        <div>Datalist</div>
+        <input name="selectLanguage" type="text" value="sv"
+               placeholder="Select language" list="dtLanguagues"
+               data-error-datalist="You must select a valid language code!" />
+        <datalist id="dtLanguagues">
+            <option value="sv">Swedish</option>
+            <option value="no">Norwegian</option>
+            <option value="da">Danish</option>
+            <option value="en">English</option>
+            <option value="fi">Finnish</option>
+        </datalist>
+        <div class="validation-error" data-error-for="selectLanguage"></div>
+
+        <input type="button" class="btn-disablable" value="Save" onclick="submitForm(document.querySelector('#inputForm'));" />
+        @*<input type="submit" class="annytab-form-button" value="Save" />*@
+
+    </form>
+
+    @*Scripts*@
+    <link href="/css/annytab.notifier.css" rel="stylesheet" />
+    <script src="/js/font-awesome/all.min.js"></script>
+    @*<script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.closest%2CArray.from%2CArray.prototype.includes%2CCustomEvent%2CPromise%2CXMLHttpRequest%2CElement.prototype.remove%2CString.prototype.endsWith%2CString.prototype.includes"></script>*@
+    <script src="/js/polyfills/polyfiller.js"></script>
+    <script src="/tjs-babel/runtime.js"></script>
+    <script src="/tjs-babel/annytab.effects.js"></script>
+    <script src="/tjs-babel/annytab.notifier.js"></script>
+    <script src="/tjs-babel/annytab.html5.validation.js"></script>
+    <script src="/tjs-babel/annytab.form.methods.js"></script>
+
+</body>
+</html>

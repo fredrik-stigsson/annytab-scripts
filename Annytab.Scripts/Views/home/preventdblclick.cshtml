@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Prevent double click</title>
+    <style>
+input:disabled, button:disabled, input:disabled:hover, button:disabled:hover {
+    resize: none;
+    outline: none;
+    color: #000000;
+    background-color: #ddd;
+    border-color: #ddd;
+    cursor: default;
+}
+.annytab-form-button {
+    display: inline-block;
+    padding: 6px 20px 6px 20px;
+    color: #000000;
+    font-size: 16px;
+    line-height: 16px;
+    font-weight: bold;
+    background-color: #ffffff;
+    border: 1px solid #d9d9d9;
+    margin: 10px 0px 0px 0px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+.annytab-form-button:hover {
+    background-color: #ddd;
+    text-decoration: none;
+}
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;padding:20px;">
+
+<form id="inputForm" action="/home/test" enctype="multipart/form-data">
+    <div>Username</div>
+    <input name="txtUsername" type="text" value="" placeholder="Username" /><br /><br />
+
+    <input type="button" class="annytab-form-button btn-disablable" value="Save" onclick="sendForm(document.getElementById('inputForm'))" />
+    <input type="button" class="annytab-form-button btn-disablable" value="Cancel" onclick="console.log('cancel');" />
+    <input type="button" class="annytab-form-button btn-disablable" value="minify" onclick="console.log('minify');" />
+</form>
+
+<link href="/css/annytab.notifier.css" rel="stylesheet" />
+<script src="/js/font-awesome/all.min.js"></script>
+<script src="/js/annytab.effects.js"></script>
+<script src="/js/annytab.notifier.js"></script>
+<script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=XMLHttpRequest%2CCustomEvent"></script>
+<script>
+
+    // Set options
+    annytab.notifier.setOptions({ duration: 5000, position: 'top-center', fade_duration: 1000 });
+
+    // Submit a form
+    function sendForm(form)
+    {
+        // Disable buttons
+        disableButtons();
+
+        // Make sure that the form is valid
+        //if (valid(form) === false) { enableButtons(); return false; }
+
+        // Get form data
+        var fd = new FormData(form);
+
+        // Post form data
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', form.getAttribute('action'), true);
+        xhr.onload = function () {
+            if (xhr.status === 200)
+            {
+                // Get the response
+                var data = JSON.parse(xhr.response);
+
+                // Check the success status
+                if (data.success === true)
+                {
+                    // Output a success message
+                    annytab.notifier.show('success', data.message);
+                }
+                else
+                {
+                    // Output error information
+                    annytab.notifier.show('error', data.message);
+                }
+            }
+            else
+            {
+                // Output error information
+                annytab.notifier.show('error', xhr.status + " - " + xhr.statusText);
+            }
+
+            // Enable buttons
+            enableButtons();
+
+        };
+        xhr.onerror = function ()
+        {
+            // Output error information
+            annytab.notifier.show('error', xhr.status + " - " + xhr.statusText);
+
+            // Enable buttons
+            enableButtons();
+        };
+        xhr.send(fd);
+
+    } // End of the sendForm method
+
+    // Disable buttons
+    function disableButtons()
+    {
+        var buttons = document.getElementsByClassName('btn-disablable');
+        for (var i = 0; i < buttons.length; i++)
+        {
+            buttons[i].setAttribute('disabled', true);
+        }
+
+    } // End of the disableButtons method
+
+    // Enable buttons
+    function enableButtons()
+    {
+        var buttons = document.getElementsByClassName('btn-disablable');
+        for (var i = 0; i < buttons.length; i++)
+        {
+            setTimeout(function (button) { button.removeAttribute('disabled'); }, 1000, buttons[i]);
+        }
+
+    } // End of the enableButtons method
+
+</script>
+
+</body>
+</html>

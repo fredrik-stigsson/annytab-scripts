@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Image Preview</title>
+    <style>
+        .annytab-imagepreview{
+            display:block;
+            border:1px solid #ff0000;
+        }
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;padding:20px;">
+
+    @*Html*@
+    <div>Background image</div>
+    <input name="background_image" type="file" data-imagepreview-container="img0" multiple autofocus />
+    <div id="img0" style="margin:10px 0px 0px 2px;"></div>
+
+    @*Scripts*@
+    <script src="/js/annytab.imagepreview.js"></script>
+    <script>
+
+        // Image preview
+        var image_preview = new annytab.imagepreview({ image_class: 'annytab-imagepreview', alt: 'ALT' });
+
+    </script>
+
+</body>
+</html>

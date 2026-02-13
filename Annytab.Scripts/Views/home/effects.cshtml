@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Effects</title>
+    <style>
+
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;">
+
+    <div style="display:block;padding:10px;">
+
+        <div>
+            <a href="#" onclick="slideDown()">SlideDown</a> |
+            <a href="#" onclick="slideUp()">SlideUp</a> |
+            <a href="#" onclick="slideToggle()">SlideToggle</a> |
+            <a href="#" onclick="fadeIn()">FadeIn</a> |
+            <a href="#" onclick="fadeOut()">FadeOut</a> |
+            <a href="#" onclick="fadeToggle()">FadeToggle</a>
+        </div><br />
+
+        <div id="content" style="display:none;background-color:#808080;">
+            Löneadministration<br /><br />
+            Koncernredovisning<br /><br />
+            Redovisning enligt IFRS<br /><br />
+            Forum om bokföring<br /><br />
+            Årsredovisning<br /><br />
+        </div>
+
+    </div>
+
+    @*Scripts*@
+    <script src="/js/annytab.effects.js"></script>
+
+    <script>
+        function slideDown() {
+            annytab.effects.slideDown(document.querySelector('#content'), 1000);
+        }
+        function slideUp() {
+            annytab.effects.slideUp(document.querySelector('#content'), 1000);
+        }
+        function slideToggle() {
+            annytab.effects.slideToggle(document.querySelector('#content'), 1000);
+        }
+        function fadeIn() {
+            annytab.effects.fadeIn(document.querySelector('#content'), 1000);
+        }
+        function fadeOut() {
+            annytab.effects.fadeOut(document.querySelector('#content'), 1000);
+        }
+        function fadeToggle() {
+            annytab.effects.fadeToggle(document.querySelector('#content'), 1000);
+        }
+        
+    </script>
+
+</body>
+</html>

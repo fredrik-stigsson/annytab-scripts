@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Tooltips</title>
+    <style>
+        input, div, a, textarea, select {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .annytab-form-label {
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            padding: 0px 2px 0px 2px;
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: bold;
+            margin: 10px 0px 0px 0px;
+        }
+        .annytab-input-group {
+            display: table;
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            padding: 0px;
+            margin: 10px 0px 0px 0px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            height: 34px;
+        }
+
+        .input-group-cell {
+            display: table-cell;
+            text-align: center;
+            padding: 0px;
+            vertical-align: middle;
+        }
+
+        .input-group-control {
+            display: block;
+            background-color: transparent;
+            width: 100%;
+            border: 0px;
+            margin: 0px;
+            font-size: 16px;
+            line-height: 16px;
+            padding: 10px 5px 10px 5px;
+        }
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;">
+
+    <div style="display:block;padding:10px;">
+
+        <div class="annytab-form-label">Name</div>
+        <div class="annytab-input-group">
+            <div class="input-group-cell" style="width:460px;text-align:left;">
+                <input name="txtName" type="text" class="input-group-control" value="" placeholder="Marvin Swansson" />
+            </div>
+            <div class="input-group-cell" style="width:40px;border-left:1px solid #d9d9d9;cursor:help;"
+                 title="Enter your name in this textbox." rel="tooltip">
+                <i class="far fa-question-circle fa-fw fa-lg"></i>
+            </div>
+        </div>
+
+        <div class="annytab-form-label">City</div>
+        <div class="annytab-input-group">
+            <div class="input-group-cell" style="width:460px;text-align:left;">
+                <input name="txtCity" type="text" class="input-group-control" value="" placeholder="Stockholm" />
+            </div>
+            <div class="input-group-cell" style="width:40px;border-left:1px solid #d9d9d9;cursor:help;"
+                 title="Enter the name of the city in which you live at the moment." rel="tooltip">
+                <i class="far fa-question-circle fa-fw fa-lg"></i>
+            </div>
+        </div>
+
+        <div class="annytab-form-label">Color</div>
+        <div class="annytab-input-group">
+            <div class="input-group-cell" style="width:460px;text-align:left;">
+                <input name="txtColor" type="text" class="input-group-control" value="" placeholder="Red" />
+            </div>
+            <div class="input-group-cell" style="width:40px;border-left:1px solid #d9d9d9;cursor:help;"
+                 title="Enter the name of your favorite color in this textbox. Your favorite color says a lot about you, it tells us which color you like the most :)." rel="tooltip">
+                <i class="far fa-question-circle fa-fw fa-lg"></i>
+            </div>
+        </div>
+
+        <input name="textbox" value="" />
+    </div>
+
+    @*Scripts*@
+    @*<script crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?features=Element.prototype.closest%2CElement.prototype.remove"></script>*@
+    <script src="/js/font-awesome/all.min.js"></script>
+    <link href="/css/annytab.tooltip.css" rel="stylesheet" />
+    <script src="/js/annytab.tooltip.js"></script>
+<script>
+
+    // Get all inputs
+    var inputs = document.querySelectorAll('input');
+
+    // Add event listeners
+    for (var i = 0; i < inputs.length; i++)
+    {
+        inputs[i].addEventListener('focusin', resetCursor, false);
+        inputs[i].addEventListener('click', resetCursor, false);
+    }
+
+    // Reset a cursor to the end
+    function resetCursor(event)
+    {
+        setTimeout(function () { event.target.selectionStart = event.target.value.length; }, 10);
+            
+    }
+</script>
+
+</body>
+</html>

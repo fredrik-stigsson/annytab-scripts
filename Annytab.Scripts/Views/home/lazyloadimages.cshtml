@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Lazy image loading</title>
+    <style>
+        .annytab-image{
+            max-width: 100%;
+        }
+        .lazy{
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body style="width:100%;font-family:Arial, Helvetica, sans-serif;padding:0;margin:0;">
+
+    <!-- One size image fits all screens -->
+    <img alt="One image size fits all screens!" class="lazy annytab-image" data-src="/images/fall_nature.jpg" />
+
+    <!-- Multiple image sizes for different screens, data-src is fallback for IE 11 and older browsers -->
+    <img alt="Multiple image sizes for different screens!"
+         class="lazy annytab-image"
+         data-src="/images/adventure-clouds-640x360.jpg"
+         data-srcset="/images/adventure-clouds-640x360.jpg 640w,
+                     /images/adventure-clouds-1280x720.jpg 1280w,
+                     /images/adventure-clouds-1920x1080.jpg 1920w,
+                     /images/adventure-clouds-3840x2160.jpg 3840w" />
+
+    <!-- Scripts -->
+    <!--<script src="/js/polyfills/intersection.observer.min.js"></script>-->
+    <script>
+
+        // Initialize when DOM content has been loaded
+        document.addEventListener('DOMContentLoaded', start, false);
+
+        // Start this instance
+        function start()
+        {
+            // Lazy load images
+            lazyLoadImages();
+
+        } // End of the start method
+
+        // Lazy load images
+        function lazyLoadImages()
+        {
+            // Get images
+            var images = document.querySelectorAll('img.lazy');
+
+            // Create a new IntersectionObserver (Polyfilled)
+            var observer = new IntersectionObserver(function (entries) {
+
+                // Loop entries
+                for (i = 0; i < entries.length; i++) {
+
+                    if (entries[i].isIntersecting === true) {
+                        var image = entries[i].target;
+                        var src = image.getAttribute('data-src');
+                        var srcset = image.getAttribute('data-srcset');
+                        if (src !== null) { image.src = src; }
+                        if (srcset !== null) { image.srcset = srcset; }
+                        image.classList.remove('lazy');
+                        observer.unobserve(image);
+                    }
+                }
+            });
+
+            // Loop images
+            for (i = 0; i < images.length; i++) {
+                observer.observe(images[i]);
+            }
+
+        } // End of the lazyLoadImages method
+
+    </script>
+
+</body>
+</html>
