@@ -1,0 +1,17 @@
+{
+    "tasks": [
+        {
+            "label": "Nodejs Build", // Name of task
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "command": "npm", // Could be any other shell command
+            "args": [
+                "run",
+                "build"
+            ]   
+        }
+    ],
+    "version": "2.0.0"
+}

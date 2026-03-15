@@ -1,0 +1,105 @@
+#### Create a new Node.js project (create a folder and "cd" into it)
+cd /
+cd DATA/Nodejs-projects
+mkdir hello
+cd hello
+
+### Initialize Node.js
+npm init -y
+
+### Install Express and TypeScript
+npm install express
+npm install -D @types/express @types/node ts-node typescript
+npm install playwright playwright-extra puppeteer-extra-plugin-stealth
+
+### Initialize Typescript
+npx tsc --init
+
+### Create project structure
+- src
+-- controller
+-- model
+-- service
+-- app.ts
+
+### Install node-cache
+npm i node-cache
+npm i -D @types/node-cache
+npm i dotenv
+
+### Chrome remote interface
+npm i chrome-remote-interface
+npm i --save-dev @types/chrome-remote-interface
+npm i chrome-launcher
+#npm i --save-dev @types/chrome-launcher
+
+### xvfb-ts
+npm install xvfb-ts
+
+### Robotjs
+npm install robotjs
+
+### Node HTML Parser
+npm install node-html-parser
+
+### Install tough-cookie
+npm install tough-cookie
+npm i --save-dev @types/tough-cookie
+
+### Install chromium
+npm install chromium
+
+### Install puppeteer real browser (Typescript)
+npm i puppeteer-real-browser
+npm i https://github.com/CrispyyBaconx/puppeteer-real-browser
+npm i --save-dev "C:\DATA\Nodejs-projects\puppeteer-real-browser\types\puppeteer-real-browser"
+npm uninstall @types/puppeteer-real-browser
+npm uninstall puppeteer-real-browser
+
+### Build Application
+npm run build
+
+"scripts": {
+    "start": "node build/app.js",
+    "dev": "tsc && node build/app.js",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  
+npm install --omit=dev
+
+npm outdated
+npm audit
+npm audit fix
+npm audit fix --force
+npm update
+
+npm install -g npm@10.8.3
+
+  "scripts": {
+    "start": "node build/app.js",
+    "dev": "ts-node-dev --respawn --pretty --transpile-only src/app.ts",
+    "build": "shx rm -rf ./build && tsc && shx cp -r ./src/public ./build/ && shx cp -r ./src/view ./build/ && shx rm -rf ./build/public/filer/mall/*.* && shx rm -rf ./build/public/filer/bild/*.*",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  
+  ### Install Express, TypeScript and related dependencies
+npm install express compression cookie-parser cors dotenv twig
+npm install -D @types/express @types/compression @types/cookie-parser @types/cors @types/dotenv @types/node shx ts-node ts-node-dev typescript
+
+### Initialize Typescript
+npx tsc --init
+
+### Create project structure
+- src
+-- controller
+-- model
+-- public
+-- service
+-- view
+-- app.ts
+
+### Extend twig
+npm i --save-dev @types/twig
+npm install express-fileupload
+npm i --save-dev @types/express-fileupload
