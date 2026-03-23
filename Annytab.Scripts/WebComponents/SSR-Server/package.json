@@ -1,0 +1,9 @@
+{
+    "name": "my-ssr-framework",
+    "version": "1.0.0",
+    "main": "server.mjs",
+    "type": "module",
+    "scripts": {
+        "start": "node server.mjs"
+    }
+}

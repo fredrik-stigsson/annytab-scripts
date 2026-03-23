@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Photorealistic 3D Viewer - Web Component (Sketchfab Style)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Info panel for instructions */
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            font-family: monospace;
+        }
+        
+        /* Simple loading indicator */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            color: white;
+            font-size: 18px;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+        
+        .loading-text {
+            background: rgba(0,0,0,0.6);
+            padding: 12px 24px;
+            border-radius: 40px;
+            border-left: 3px solid #ff8800;
+        }
+        
+        /* UI hint for controls */
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            color: #ccc;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: monospace;
+            pointer-events: none;
+            backdrop-filter: blur(4px);
+            z-index: 10;
+        }
+        
+        @media (max-width: 600px) {
+            .controls-hint { display: none; }
+            .info { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Web Component: photorealistic-3d-viewer -->
+    <photorealistic-3d-viewer 
+        id="viewer"
+        model-url="https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf"
+        background-color="#111122"
+        camera-position="2,1.5,2.5"
+        exposure="1.2"
+        environment-intensity="1.0"
+    ></photorealistic-3d-viewer>
+
+    <div class="info">
+        🎨 Photorealistic 3D Viewer | Drag to orbit • Right-click + drag to pan • Scroll to zoom
+    </div>
+    <div class="controls-hint">
+        🖱️ Mouse / Touch: Orbit, Pan, Zoom
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+        // Define the Web Component class
+        class Photorealistic3DViewer extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                
+                // Container for the canvas
+                this.container = document.createElement('div');
+                this.container.style.width = '100%';
+                this.container.style.height = '100%';
+                this.container.style.position = 'relative';
+                this.container.style.overflow = 'hidden';
+                
+                // Loading overlay
+                this.loadingDiv = document.createElement('div');
+                this.loadingDiv.className = 'loading-overlay';
+                this.loadingDiv.innerHTML = '<div class="loading-text">🌀 Loading 3D Asset...<br>⚡ Photorealistic Renderer</div>';
+                this.container.appendChild(this.loadingDiv);
+                
+                this.shadowRoot.appendChild(this.container);
+                
+                // Three.js globals
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.controls = null;
+                this.modelGroup = null;
+                this.clock = new THREE.Clock();
+                this.animationId = null;
+                
+                // Config from attributes
+                this.modelUrl = this.getAttribute('model-url') || 'https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf';
+                this.bgColor = this.getAttribute('background-color') || '#111122';
+                this.cameraPos = this.getAttribute('camera-position') || '2,1.5,2.5';
+                this.exposure = parseFloat(this.getAttribute('exposure')) || 1.2;
+                this.envIntensity = parseFloat(this.getAttribute('environment-intensity')) || 1.0;
+                
+                // High-quality HDR environment map (photorealistic reflections)
+                // Using a beautiful studio HDR from Three.js examples (high dynamic range)
+                this.hdrUrl = 'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg';
+                // Actually, for better realism, we'll use a proper HDR or EXR? But we'll use a high-res cubemap alternative: 
+                // Instead, we'll load an HDR file (.hdr) from a CDN for better photorealism.
+                // Let's use a classic studio HDR .hdr file available online (Royal Esplanade or similar)
+                // To ensure it works without CORS, we pick a reliable HDR from threejs examples - but they don't have .hdr by default.
+                // However we can generate a nice CubeTexture with high quality or use PMREMGenerator with an HDRLoader.
+                // I'll use a high-res HDR from a public CDN (Poly Haven's Studio Small 03, but we need a direct link).
+                // For guaranteed access, I'll use a well-known .hdr file from Three.js examples contrib? Actually, let's use:
+                // 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg' is LDR.
+                // Better: Use RGBELoader with a high quality HDR from 'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr'
+                // That exists in the examples repository? Not directly served, but we can use a valid cross-origin HDR from jsdelivr.
+                // I'll use a reliable HDR file from a CDN that supports CORS.
+                this.hdrPath = 'https://threejs.org/examples/textures/equirectangular/venice_sunset_1k.hdr';
+                // Fallback: if loading fails, we'll generate a nice procedural environment map.
+            }
+            
+            static get observedAttributes() {
+                return ['model-url', 'background-color', 'exposure', 'environment-intensity'];
+            }
+            
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (oldValue === newValue) return;
+                if (name === 'model-url' && newValue && this.scene) {
+                    this.modelUrl = newValue;
+                    this.reloadModel();
+                }
+                if (name === 'background-color' && this.scene) {
+                    this.bgColor = newValue;
+                    this.scene.background = new THREE.Color(this.bgColor);
+                }
+                if (name === 'exposure' && this.renderer) {
+                    this.exposure = parseFloat(newValue);
+                    this.renderer.toneMappingExposure = this.exposure;
+                }
+                if (name === 'environment-intensity' && this.scene) {
+                    this.envIntensity = parseFloat(newValue);
+                    if (this.scene.environment) {
+                        this.scene.environment.intensity = this.envIntensity;
+                    }
+                }
+            }
+            
+            connectedCallback() {
+                this.initThree();
+                window.addEventListener('resize', this.onWindowResize.bind(this));
+            }
+            
+            disconnectedCallback() {
+                window.removeEventListener('resize', this.onWindowResize.bind(this));
+                if (this.animationId) cancelAnimationFrame(this.animationId);
+                if (this.renderer) {
+                    this.renderer.dispose();
+                    this.container.removeChild(this.renderer.domElement);
+                }
+            }
+            
+            initThree() {
+                // Scene setup with dark background initially
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(this.bgColor);
+                this.scene.environmentIntensity = this.envIntensity;
+                
+                // Camera: Perspective with good FOV
+                const posArr = this.cameraPos.split(',').map(Number);
+                this.camera = new THREE.PerspectiveCamera(45, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+                this.camera.position.set(posArr[0], posArr[1], posArr[2]);
+                this.camera.lookAt(0, 0.5, 0);
+                
+                // Renderer: WebGL with high-quality settings (physically correct lighting, shadows, antialiasing)
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+                this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = this.exposure;
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows for realism
+                this.renderer.outputEncoding = THREE.sRGBEncoding; // Note: in r128, outputEncoding is deprecated but works; for newer, but fine
+                // For r128 we use outputEncoding = THREE.sRGBEncoding
+                this.container.appendChild(this.renderer.domElement);
+                
+                // Orbit Controls with smooth damping and realistic feel
+                this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;      // inertial movement
+                this.controls.dampingFactor = 0.05;
+                this.controls.rotateSpeed = 1.0;
+                this.controls.zoomSpeed = 1.2;
+                this.controls.panSpeed = 0.8;
+                this.controls.screenSpacePanning = true; // avoid panning tilting
+                this.controls.maxPolarAngle = Math.PI / 1.8;
+                this.controls.target.set(0, 0.5, 0);
+                
+                // Load high-quality environment map (HDR) for realistic reflections and lighting
+                this.loadEnvironmentMap();
+                
+                // Add subtle grid helper and ground reflection effect? No, but we add a subtle shadow catcher plane? Not needed, model will cast shadows.
+                // Optional: Add a very subtle rim light / fill light? Environment HDR will handle it, but we also add a directional light for extra rim?
+                // For photorealism, we'll rely on environment + a subtle key light to enhance specular.
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+                fillLight.position.set(1, 2, 1);
+                fillLight.castShadow = true;
+                fillLight.receiveShadow = false;
+                fillLight.shadow.mapSize.width = 1024;
+                fillLight.shadow.mapSize.height = 1024;
+                this.scene.add(fillLight);
+                
+                const backLight = new THREE.DirectionalLight(0x88aaff, 0.4);
+                backLight.position.set(-1, 1, -1.5);
+                this.scene.add(backLight);
+                
+                // Add a subtle rim light from below
+                const rimLight = new THREE.PointLight(0x4466cc, 0.3);
+                rimLight.position.set(0, -1, 0);
+                this.scene.add(rimLight);
+                
+                // Load main 3D model
+                this.loadModel();
+                
+                // Start animation loop
+                this.animate();
+            }
+            
+            loadEnvironmentMap() {
+                // Using RGBELoader for true HDR environment (photorealistic reflections)
+                const rgbeLoader = new RGBELoader();
+                rgbeLoader.setDataType(THREE.HalfFloatType);
+                rgbeLoader.load(this.hdrPath, (texture) => {
+                    texture.mapping = THREE.EquirectangularReflectionMapping;
+                    texture.name = "HDR_Environment";
+                    this.scene.environment = texture;
+                    this.scene.environment.intensity = this.envIntensity;
+                    console.log('HDR Environment map loaded successfully');
+                }, undefined, (err) => {
+                    console.warn('Could not load HDR environment, using fallback procedural CubeMap', err);
+                    // Fallback: Create a nice gradient/cubemap using CubeTextureLoader with some high-res images? 
+                    // Simpler: Generate a CubeTexture with vibrant studio look using CanvasTexture?
+                    // Actually generate a realistic PMREMGenerator from a loaded JPG.
+                    const cubeTextureLoader = new THREE.CubeTextureLoader();
+                    // Use a high quality skybox from threejs examples (cubemap)
+                    cubeTextureLoader.setPath('https://threejs.org/examples/textures/cube/SwedishRoyal/');
+                    cubeTextureLoader.load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'], (cubeTex) => {
+                        cubeTex.mapping = THREE.CubeRefractionMapping;
+                        this.scene.environment = cubeTex;
+                        this.scene.environment.intensity = this.envIntensity;
+                    }, undefined, (fallbackErr) => {
+                        console.warn('CubeMap fallback failed, using simple generated env');
+                        // Final fallback: create a simple light probe
+                        const envTexture = this.generateSimpleEnvMap();
+                        this.scene.environment = envTexture;
+                        this.scene.environment.intensity = this.envIntensity;
+                    });
+                });
+            }
+            
+            generateSimpleEnvMap() {
+                // Create a soft gradient environment map for acceptable reflections
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                const grd = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                grd.addColorStop(0, '#2c3e66');
+                grd.addColorStop(0.5, '#5a6e8a');
+                grd.addColorStop(1, '#1e2a3a');
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Add some specular highlights
+                ctx.fillStyle = '#ffdd99';
+                ctx.beginPath();
+                ctx.arc(canvas.width*0.8, canvas.height*0.2, 80, 0, 2*Math.PI);
+                ctx.fill();
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                return texture;
+            }
+            
+            loadModel() {
+                // Remove existing model if any
+                if (this.modelGroup) {
+                    this.scene.remove(this.modelGroup);
+                    this.modelGroup = null;
+                }
+                
+                // Show loading overlay
+                if (this.loadingDiv) this.loadingDiv.style.opacity = '1';
+                
+                const loader = new GLTFLoader();
+                loader.load(this.modelUrl, (gltf) => {
+                    this.modelGroup = gltf.scene;
+                    // Enable shadows and adjust materials for photorealism
+                    this.modelGroup.traverse((node) => {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            // Enhance material properties if possible
+                            if (node.material) {
+                                // Ensure metalness/roughness are properly interpreted
+                                if (node.material.isMeshStandardMaterial) {
+                                    node.material.roughness = node.material.roughness || 0.4;
+                                    node.material.metalness = node.material.metalness || 0.6;
+                                    node.material.envMapIntensity = 1.2;
+                                }
+                                // For better realism, slightly increase roughness variation? but keep original
+                            }
+                        }
+                    });
+                    
+                    // Center and scale model to fit nicely (optional)
+                    const box = new THREE.Box3().setFromObject(this.modelGroup);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 1.8 / maxDim;
+                    this.modelGroup.scale.setScalar(scale);
+                    // Reposition to ground plane (y=0)
+                    this.modelGroup.position.x = -center.x * scale;
+                    this.modelGroup.position.y = -box.min.y * scale;
+                    this.modelGroup.position.z = -center.z * scale;
+                    
+                    this.scene.add(this.modelGroup);
+                    
+                    // Hide loading overlay with fade
+                    if (this.loadingDiv) {
+                        this.loadingDiv.style.transition = 'opacity 0.8s';
+                        this.loadingDiv.style.opacity = '0';
+                        setTimeout(() => {
+                            if (this.loadingDiv && this.loadingDiv.parentNode) this.loadingDiv.style.display = 'none';
+                        }, 1000);
+                    }
+                    console.log('Model loaded successfully:', this.modelUrl);
+                }, (xhr) => {
+                    // Optional loading progress
+                    const percent = Math.floor((xhr.loaded / xhr.total) * 100);
+                    if (this.loadingDiv) {
+                        this.loadingDiv.innerHTML = `<div class="loading-text">📦 Loading 3D Model ${percent}%<br>✨ Photorealistic Renderer</div>`;
+                    }
+                }, (error) => {
+                    console.error('Error loading model:', error);
+                    if (this.loadingDiv) {
+                        this.loadingDiv.innerHTML = '<div class="loading-text" style="background:#aa3300;">❌ Failed to load model<br>Check URL or network</div>';
+                        setTimeout(() => {
+                            if (this.loadingDiv) this.loadingDiv.style.opacity = '0';
+                        }, 3000);
+                    }
+                });
+            }
+            
+            reloadModel() {
+                this.loadModel();
+            }
+            
+            onWindowResize() {
+                const width = this.container.clientWidth;
+                const height = this.container.clientHeight;
+                this.camera.aspect = width / height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(width, height);
+            }
+            
+            animate() {
+                this.animationId = requestAnimationFrame(this.animate.bind(this));
+                // Update controls for damping
+                this.controls.update();
+                // Slight automatic subtle rotation? no, keep user control.
+                // Render scene
+                if (this.renderer && this.scene && this.camera) {
+                    this.renderer.render(this.scene, this.camera);
+                }
+            }
+        }
+        
+        // Register the custom element
+        if (!customElements.get('photorealistic-3d-viewer')) {
+            customElements.define('photorealistic-3d-viewer', Photorealistic3DViewer);
+        }
+        
+        // Additional: Once component is loaded, we can expose for dynamic updates if needed.
+        window.addEventListener('DOMContentLoaded', () => {
+            const viewer = document.getElementById('viewer');
+            if (viewer) {
+                console.log('3D Viewer Ready - Sketchfab-like experience');
+                // You can dynamically change model: viewer.setAttribute('model-url', 'new-url.gltf');
+            }
+        });
+    </script>
+</body>
+</html>

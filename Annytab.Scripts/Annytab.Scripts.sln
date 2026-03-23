@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Annytab.Scripts", "Annytab.Scripts.csproj", "{00EBA28A-4515-C4CC-D6F8-89E7D14ABB97}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00EBA28A-4515-C4CC-D6F8-89E7D14ABB97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00EBA28A-4515-C4CC-D6F8-89E7D14ABB97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00EBA28A-4515-C4CC-D6F8-89E7D14ABB97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00EBA28A-4515-C4CC-D6F8-89E7D14ABB97}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {392A143A-B739-4774-B09D-B454919F1CCD}
+	EndGlobalSection
+EndGlobal
