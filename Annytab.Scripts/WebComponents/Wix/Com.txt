@@ -1,0 +1,193 @@
+﻿Here is the WiX source code that handles the installation directory registry and COM registration during the install process.
+
+The WiX Solution
+Instead of using inline JScript, the correct and declarative way to achieve this in WiX is by using the built-in File element with the Assembly attribute, or manually with RegistryValue elements and formatted syntax.
+
+1. Setting and Retrieving the Install Directory (No Trailing Slash)
+WiX handles paths cleanly. You don't need to manually remove trailing slashes if you use the [INSTALLFOLDER] property correctly. The Windows Installer typically does not add a trailing slash to the INSTALLFOLDER property when used in formatted strings.
+
+To store the install directory:
+
+xml
+<Component Id="RegistryEntries" Directory="INSTALLFOLDER" Guid="YOUR-GUID-HERE">
+  <!-- Store the install path -->
+  <RegistryValue Root="HKLM" 
+                 Key="SOFTWARE\YourCompany\YourApp" 
+                 Name="InstallPath" 
+                 Value="[INSTALLFOLDER]" 
+                 Type="string" 
+                 KeyPath="yes" />
+</Component>
+To retrieve it later (e.g., during upgrade or repair):
+
+xml
+<Property Id="INSTALLFOLDER">
+  <RegistrySearch Id="FindInstallPath" 
+                  Root="HKLM" 
+                  Key="SOFTWARE\YourCompany\YourApp" 
+                  Name="InstallPath" 
+                  Type="raw" />
+</Property>
+The [INSTALLFOLDER] formatted value naturally contains a path without a trailing slash, which avoids double-backslash issues in your CodeBase entries .
+
+2. COM Registration (.NET Assembly) - The Correct Way
+For .NET assemblies exposed to COM, use the Assembly=".net" attribute on the File element. This replaces regasm /codebase and handles the CLSID, ProgID, and CodeBase registry entries automatically .
+
+xml
+<Component Id="MyAssemblyComponent" Directory="INSTALLFOLDER" Guid="YOUR-GUID">
+  <File Id="MyAssembly.dll" 
+        Name="MyAssembly.dll" 
+        Source="$(var.SourceDir)\MyAssembly.dll" 
+        Assembly=".net" 
+        KeyPath="yes">
+    <!-- The Class element registers the COM object -->
+    <Class Id="{YOUR-CLSID-GUID}" 
+           Context="InprocServer32" 
+           ThreadingModel="both" 
+           Description="My COM Component" 
+           ForeignServer="mscoree.dll">
+      <ProgId Id="MyApp.Component.1" Description="My COM Component" />
+    </Class>
+  </File>
+</Component>
+What this does:
+
+Automatically writes the CodeBase entry with the correct path to your DLL
+
+Sets the InprocServer32 default value to mscoree.dll (required for .NET COM components)
+
+Creates the ProgID entries
+
+Uses formatted syntax [#MyAssembly.dll] which resolves to the full installation path with forward slashes automatically
+
+3. Manual COM Registration (If You Need Control)
+If you need manual control over the registry entries (e.g., for 64-bit specific paths or custom CodeBase formatting), use the [#FileId] formatted syntax. The # symbol resolves to the full installation path of the referenced file .
+
+xml
+<Component Id="ManualComRegistration" Directory="INSTALLFOLDER" Guid="ANOTHER-GUID">
+  <File Id="MyAssembly.dll" Source="$(var.SourceDir)\MyAssembly.dll" />
+  
+  <!-- CLSID registration -->
+  <RegistryKey Root="HKCR" Key="CLSID\{YOUR-CLSID-GUID}\InprocServer32">
+    <RegistryValue Value="mscoree.dll" Type="string" />
+    <!-- CodeBase with automatic forward slashes -->
+    <RegistryValue Name="CodeBase" Value="file:///[#MyAssembly.dll]" Type="string" />
+    <RegistryValue Name="Assembly" Value="MyAssembly, Version=1.0.0.0, Culture=neutral, PublicKeyToken=..." Type="string" />
+    <RegistryValue Name="Class" Value="MyNamespace.MyClass" Type="string" />
+    <RegistryValue Name="RuntimeVersion" Value="v4.0.30319" Type="string" />
+  </RegistryKey>
+  
+  <!-- ProgID (optional) -->
+  <RegistryKey Root="HKCR" Key="MyApp.Component.1">
+    <RegistryValue Value="My COM Component" Type="string" />
+    <RegistryKey Key="CLSID">
+      <RegistryValue Value="{YOUR-CLSID-GUID}" Type="string" />
+    </RegistryKey>
+  </RegistryKey>
+</Component>
+Important: The [#MyAssembly.dll] syntax automatically uses forward slashes when expanded, solving your path separator issue. Place the registry values and the file in the same component to avoid ICE69 warnings .
+
+4. For WiX Bundle (Burn)
+If you're using a Burn bootstrapper bundle, registry searches work differently. Use util:RegistrySearch to find existing installations and set variables :
+
+xml
+<Fragment>
+  <util:RegistrySearch Id="FindExistingInstall"
+                       Root="HKLM"
+                       Key="SOFTWARE\YourCompany\YourApp"
+                       Value="InstallPath"
+                       Result="value"
+                       Variable="ExistingInstallPath" />
+  
+  <!-- Conditionally set InstallFolder if previous install exists -->
+  <util:DirectorySearch Path="[ExistingInstallPath]"
+                        Variable="InstallFolder"
+                        After="FindExistingInstall"
+                        Condition="ExistingInstallPath" />
+  
+  <Variable Name="InstallFolder" 
+            Type="string" 
+            Value="[ProgramFilesFolder]YourCompany\YourApp" 
+            bal:Overridable="yes" 
+            Persisted="yes" />
+</Fragment>
+Pass the variable to your MSI package using MsiProperty :
+
+xml
+<MsiPackage SourceFile="$(var.Setup.TargetPath)">
+  <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+</MsiPackage>
+Best Practices Summary
+Never use JScript or Custom Actions for COM registration in WiX—it breaks repair/uninstall scenarios 
+
+Keep the File and its Registry entries in the same Component to maintain proper reference counting
+
+Use Assembly=".net" on the File element for automatic regasm-style registration
+
+The [#FileId] formatted syntax automatically converts backslashes to forward slashes for CodeBase entries
+
+For Burn bundles, use util:RegistrySearch with util:DirectorySearch to remember custom install paths across upgrades
+
+Use WiX with CustomAction (JScript)
+If you must use UNC paths in your WiX installer, create a custom action:
+
+xml
+<Binary Id="RegisterComScript" SourceFile="RegisterCom.js" />
+<CustomAction Id="RegisterComCA" 
+              BinaryKey="RegisterComScript" 
+              JScriptCall="RegisterCOM" 
+              Return="check" 
+              Execute="deferred" 
+              Impersonate="no" />
+
+<InstallExecuteSequence>
+  <Custom Action="RegisterComCA" After="InstallFiles">NOT REMOVE</Custom>
+</InstallExecuteSequence>
+RegisterCom.js:
+
+javascript
+function RegisterCOM() {
+    try {
+        // Get the UNC install path from property
+        var sInstallDir = Session.Property("INSTALLFOLDER");
+        
+        // Remove trailing slash
+        if (sInstallDir.charAt(sInstallDir.length - 1) == '\\') {
+            sInstallDir = sInstallDir.substring(0, sInstallDir.length - 1);
+        }
+        
+        var dllPath = sInstallDir + "\\ad.dll";
+        
+        // Format CodeBase for UNC
+        var sCodeBase = FormatUncCodeBase(dllPath);
+        
+        // Write registry entries
+        var shell = new ActiveXObject("WScript.Shell");
+        shell.RegWrite("HKCR\\CLSID\\{YOUR-GUID}\\InprocServer32\\", "mscoree.dll", "REG_SZ");
+        shell.RegWrite("HKCR\\CLSID\\{YOUR-GUID}\\InprocServer32\\CodeBase", sCodeBase, "REG_SZ");
+        
+        return 0; // Success
+    } catch(e) {
+        Session.Property("CustomActionData") = "Error: " + e.message;
+        return 1; // Failure
+    }
+}
+
+function FormatUncCodeBase(path) {
+    // Remove trailing backslash
+    if (path.charAt(path.length - 1) == '\\') {
+        path = path.substring(0, path.length - 1);
+    }
+    
+    // Replace all backslashes with forward slashes
+    path = path.replace(/\\/g, '/');
+    
+    // For UNC paths (starting with //)
+    if (path.indexOf('//') === 0) {
+        // UNC needs 4 slashes: file:////server/share
+        return 'file://' + path;
+    }
+    
+    // Local path needs 3 slashes: file:///C:/folder/file
+    return 'file:///' + path;
+}
