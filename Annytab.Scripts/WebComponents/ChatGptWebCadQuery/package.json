@@ -1,0 +1,19 @@
+{
+  "name": "web-cadquery",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "monaco-editor": "^0.45.0",
+    "opencascade.js": "^2.0.0-beta.b5ff984",
+    "three": "^0.161.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.6.0"
+  }
+}

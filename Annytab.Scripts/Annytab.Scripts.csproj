@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="WebComponents\DeepseekWebCadQuery\src\**" />
+    <Content Remove="WebComponents\DeepseekWebCadQuery\src\**" />
+    <EmbeddedResource Remove="WebComponents\DeepseekWebCadQuery\src\**" />
+    <None Remove="WebComponents\DeepseekWebCadQuery\src\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="bundleconfig.json" />
     <Content Remove="WebComponents\SSR-Server\package.json" />
   </ItemGroup>
@@ -22,6 +29,8 @@
 
   <ItemGroup>
     <Folder Include="WebComponents\3D-viewer\" />
+    <Folder Include="WebComponents\ChatGptWebCadQuery\public\wasm\" />
+    <Folder Include="WebComponents\DeepseekWebCadQuery\public\wasm\" />
     <Folder Include="WebComponents\SSR-Server\plugins\" />
     <Folder Include="wwwroot\tjs-typescript\" />
   </ItemGroup>

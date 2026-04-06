@@ -1,0 +1,16 @@
+{
+  "name": "webcadquery",
+  "version": "1.0.0",
+  "description": "CadQuery-style CAD web app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "copy-wasm": "cp -r node_modules/opencascade.js/dist public/wasm",
+    "copy-three": "cp node_modules/three/build/three.min.js public/"
+  },
+  "dependencies": {
+    "express": "^4.22.1",
+    "opencascade.js": "^2.0.0-beta.b5ff984",
+    "three": "^0.183.2"
+  }
+}
